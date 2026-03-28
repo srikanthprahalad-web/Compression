@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF Under 250 KB</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --accent: #2563eb;
+      --accent-2: #1d4ed8;
+      --success: #166534;
+      --warn: #92400e;
+      --shadow: 0 10px 30px rgba(0,0,0,.08);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #f8faff 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+    .wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 20px 60px;
+    }
+    .hero {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(28px, 5vw, 44px);
+      line-height: 1.05;
+    }
+    .sub {
+      margin: 0 auto;
+      color: var(--muted);
+      max-width: 720px;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+    }
+    .dropzone {
+      border: 2px dashed #bfdbfe;
+      background: #f8fbff;
+      border-radius: 16px;
+      padding: 28px;
+      text-align: center;
+      transition: .2s ease;
+      cursor: pointer;
+    }
+    .dropzone.drag { background: #eff6ff; border-color: var(--accent); }
+    .dropzone strong { display:block; font-size: 18px; margin-bottom: 8px; }
+    .dropzone span { color: var(--muted); font-size: 14px; }
+    input[type=file] { display:none; }
+    .row {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+      align-items: center;
+    }
+    .field {
+      flex: 1 1 220px;
+      min-width: 200px;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 7px;
+    }
+    select, button {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      font-size: 15px;
+      background: white;
+    }
+    button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: .2s ease;
+    }
+    button:hover { background: var(--accent-2); }
+    button:disabled { opacity: .6; cursor: not-allowed; }
+    .stats {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+    }
+    .stat {
+      background: #fafafa;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    .stat .k { color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+    .stat .v { font-size: 17px; font-weight: 700; }
+    .progress {
+      width: 100%;
+      height: 10px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 14px;
+    }
+    .bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #60a5fa, #2563eb);
+      transition: width .25s ease;
+    }
+    .status {
+      margin-top: 14px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--muted);
+      white-space: pre-line;
+    }
+    .status.ok { color: var(--success); }
+    .status.warn { color: var(--warn); }
+    .actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:18px; }
+    .ghost {
+      background: white;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .hint {
+      margin-top: 20px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      color: #78350f;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .footer {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+    code { background:#f3f4f6; padding:2px 6px; border-radius:6px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <h1>Compress PDF to Under 250 KB</h1>
+      <p class="sub">
+        Single-file GitHub Pages website. Everything runs in your browser. It works by converting each page into compressed images and rebuilding the PDF, which is effective for many PDFs but may reduce quality.
+      </p>
+    </div>
+
+    <div class="card">
+      <label for="pdfFile">PDF File</label>
+      <div id="dropzone" class="dropzone" tabindex="0">
+        <strong>Drop your PDF here or click to upload</strong>
+        <span>Best for GitHub Pages and static hosting. No server required.</span>
+      </div>
+      <input id="pdfFile" type="file" accept="application/pdf" />
+
+      <div class="row">
+        <div class="field">
+          <label for="mode">Compression style</label>
+          <select id="mode">
+            <option value="balanced" selected>Balanced</option>
+            <option value="strong">Strong compression</option>
+            <option value="extreme">Extreme compression</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="targetKb">Target size</label>
+          <select id="targetKb">
+            <option value="250" selected>250 KB</option>
+            <option value="200">200 KB</option>
+            <option value="150">150 KB</option>
+            <option value="100">100 KB</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <button id="compressBtn" disabled>Compress PDF</button>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="k">Original size</div><div class="v" id="originalSize">—</div></div>
+        <div class="stat"><div class="k">Compressed size</div><div class="v" id="compressedSize">—</div></div>
+        <div class="stat"><div class="k">Result</div><div class="v" id="resultText">Waiting</div></div>
+      </div>
+
+      <div class="progress"><div id="bar" class="bar"></div></div>
+      <div id="status" class="status">Upload a PDF to begin.</div>
+
+      <div class="actions">
+        <button id="downloadBtn" disabled>Download compressed PDF</button>
+        <button id="resetBtn" class="ghost" type="button">Reset</button>
+      </div>
+
+      <div class="hint">
+        This browser-only method cannot preserve every PDF feature perfectly. Text-based PDFs may become image-based after compression, and some files cannot realistically go below the selected size without visible quality loss.
+      </div>
+    </div>
+
+    <div class="footer">Built as a single <code>index.html</code> file for GitHub Pages.</div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.mjs" type="module"></script>
+  <script type="module">
+    import { PDFDocument } from 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/+esm';
+    import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.mjs';
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.mjs';
+
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('pdfFile');
+    const compressBtn = document.getElementById('compressBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const statusEl = document.getElementById('status');
+    const bar = document.getElementById('bar');
+    const originalSizeEl = document.getElementById('originalSize');
+    const compressedSizeEl = document.getElementById('compressedSize');
+    const resultTextEl = document.getElementById('resultText');
+    const modeEl = document.getElementById('mode');
+    const targetKbEl = document.getElementById('targetKb');
+
+    let selectedFile = null;
+    let outputBlob = null;
+
+    const fmtBytes = (bytes) => {
+      if (!Number.isFinite(bytes)) return '—';
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+    };
+
+    function setStatus(text, kind='') {
+      statusEl.className = 'status' + (kind ? ' ' + kind : '');
+      statusEl.textContent = text;
+    }
+
+    function setProgress(value) {
+      bar.style.width = Math.max(0, Math.min(100, value)) + '%';
+    }
+
+    function setFile(file) {
+      selectedFile = file;
+      outputBlob = null;
+      downloadBtn.disabled = true;
+      compressBtn.disabled = !file;
+      originalSizeEl.textContent = file ? fmtBytes(file.size) : '—';
+      compressedSizeEl.textContent = '—';
+      resultTextEl.textContent = file ? 'Ready' : 'Waiting';
+      dropzone.querySelector('strong').textContent = file ? file.name : 'Drop your PDF here or click to upload';
+      dropzone.querySelector('span').textContent = file ? 'File loaded. Choose settings and compress.' : 'Best for GitHub Pages and static hosting. No server required.';
+      setProgress(0);
+      setStatus(file ? 'PDF loaded. Click “Compress PDF”.' : 'Upload a PDF to begin.');
+    }
+
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }
+    });
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (file && file.type === 'application/pdf') setFile(file);
+    });
+    ['dragenter','dragover'].forEach(evt => dropzone.addEventListener(evt, (e) => {
+      e.preventDefault(); dropzone.classList.add('drag');
+    }));
+    ['dragleave','drop'].forEach(evt => dropzone.addEventListener(evt, (e) => {
+      e.preventDefault(); dropzone.classList.remove('drag');
+    }));
+    dropzone.addEventListener('drop', (e) => {
+      const file = e.dataTransfer.files?.[0];
+      if (file && file.type === 'application/pdf') setFile(file);
+    });
+
+    resetBtn.addEventListener('click', () => {
+      fileInput.value = '';
+      setFile(null);
+    });
+
+    function getProfiles(mode) {
+      if (mode === 'extreme') {
+        return [
+          { scale: 0.75, quality: 0.45 },
+          { scale: 0.65, quality: 0.36 },
+          { scale: 0.58, quality: 0.30 },
+          { scale: 0.52, quality: 0.24 },
+          { scale: 0.46, quality: 0.20 },
+        ];
+      }
+      if (mode === 'strong') {
+        return [
+          { scale: 0.9, quality: 0.60 },
+          { scale: 0.78, quality: 0.50 },
+          { scale: 0.68, quality: 0.42 },
+          { scale: 0.60, quality: 0.34 },
+          { scale: 0.54, quality: 0.28 },
+        ];
+      }
+      return [
+        { scale: 1.0, quality: 0.72 },
+        { scale: 0.88, quality: 0.62 },
+        { scale: 0.78, quality: 0.52 },
+        { scale: 0.70, quality: 0.44 },
+        { scale: 0.62, quality: 0.36 },
+      ];
+    }
+
+    async function renderPdfToImages(fileBytes, profile, progressBase = 0, progressSpan = 70) {
+      const loadingTask = pdfjsLib.getDocument({ data: fileBytes });
+      const pdf = await loadingTask.promise;
+      const pages = [];
+
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: profile.scale });
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d', { alpha: false });
+        canvas.width = Math.max(1, Math.floor(viewport.width));
+        canvas.height = Math.max(1, Math.floor(viewport.height));
+        await page.render({ canvasContext: ctx, viewport }).promise;
+        const dataUrl = canvas.toDataURL('image/jpeg', profile.quality);
+        pages.push({ dataUrl, width: viewport.width, height: viewport.height });
+        setProgress(progressBase + (i / pdf.numPages) * progressSpan);
+        setStatus(`Rendering page ${i} of ${pdf.numPages}...`);
+      }
+      return pages;
+    }
+
+    async function buildPdfFromImages(pages, progressBase = 70, progressSpan = 30) {
+      const pdfDoc = await PDFDocument.create();
+      for (let i = 0; i < pages.length; i++) {
+        const p = pages[i];
+        const jpg = await pdfDoc.embedJpg(p.dataUrl);
+        const page = pdfDoc.addPage([p.width, p.height]);
+        page.drawImage(jpg, { x: 0, y: 0, width: p.width, height: p.height });
+        setProgress(progressBase + ((i + 1) / pages.length) * progressSpan);
+        setStatus(`Rebuilding PDF ${i + 1} of ${pages.length}...`);
+      }
+      const bytes = await pdfDoc.save({ useObjectStreams: true });
+      return new Blob([bytes], { type: 'application/pdf' });
+    }
+
+    async function compressToTarget(file, targetBytes, mode) {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const profiles = getProfiles(mode);
+      let bestBlob = null;
+
+      for (let i = 0; i < profiles.length; i++) {
+        const profile = profiles[i];
+        setStatus(`Trying compression level ${i + 1} of ${profiles.length}...`);
+        setProgress((i / profiles.length) * 8);
+        const pages = await renderPdfToImages(bytes, profile, 8, 60);
+        const blob = await buildPdfFromImages(pages, 68, 32);
+
+        if (!bestBlob || blob.size < bestBlob.size) bestBlob = blob;
+        if (blob.size <= targetBytes) return { blob, hitTarget: true, tried: i + 1 };
+      }
+
+      return { blob: bestBlob, hitTarget: bestBlob?.size <= targetBytes, tried: profiles.length };
+    }
+
+    compressBtn.addEventListener('click', async () => {
+      if (!selectedFile) return;
+      compressBtn.disabled = true;
+      downloadBtn.disabled = true;
+      outputBlob = null;
+      const targetBytes = Number(targetKbEl.value) * 1024;
+      try {
+        setStatus('Starting compression...');
+        setProgress(2);
+        const result = await compressToTarget(selectedFile, targetBytes, modeEl.value);
+        outputBlob = result.blob;
+        compressedSizeEl.textContent = fmtBytes(outputBlob.size);
+
+        if (result.hitTarget) {
+          resultTextEl.textContent = 'Target achieved';
+          setStatus(`Done. Your PDF is below ${targetKbEl.value} KB and ready to download.`, 'ok');
+        } else {
+          resultTextEl.textContent = 'Smallest possible';
+          setStatus(`Done, but this browser-only method could not push the file below ${targetKbEl.value} KB. The smallest version found is ready to download.`, 'warn');
+        }
+        setProgress(100);
+        downloadBtn.disabled = false;
+      } catch (err) {
+        console.error(err);
+        setStatus('Compression failed. Try a smaller PDF, switch to Strong or Extreme mode, or refresh the page.', 'warn');
+        resultTextEl.textContent = 'Failed';
+        setProgress(0);
+      } finally {
+        compressBtn.disabled = false;
+      }
+    });
+
+    downloadBtn.addEventListener('click', () => {
+      if (!outputBlob) return;
+      const url = URL.createObjectURL(outputBlob);
+      const a = document.createElement('a');
+      const base = (selectedFile?.name || 'compressed.pdf').replace(/\.pdf$/i, '');
+      a.href = url;
+      a.download = `${base}-compressed.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    });
+  </script>
+</body>
+</html>

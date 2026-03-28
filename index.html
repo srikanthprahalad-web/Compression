@@ -1,108 +1,185 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Laxmi TVS - PDF Compressor</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laxmi TVS PDF Compressor</title>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-    }
+<!-- PDF LIBRARIES -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-    .box {
-      background: #1e293b;
-      padding: 30px;
-      border-radius: 12px;
-      text-align: center;
-      width: 320px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-    }
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  margin: 0;
+}
 
-    input {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      border-radius: 6px;
-      border: none;
-    }
+.box {
+  background: #1e293b;
+  padding: 30px;
+  border-radius: 12px;
+  text-align: center;
+  width: 340px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
 
-    button {
-      margin-top: 15px;
-      padding: 10px;
-      width: 100%;
-      border: none;
-      border-radius: 6px;
-      background: #22c55e;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
+input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 6px;
+  border: none;
+}
 
-    .hidden {
-      display: none;
-    }
+button {
+  margin-top: 15px;
+  padding: 10px;
+  width: 100%;
+  border: none;
+  border-radius: 6px;
+  background: #22c55e;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
 
-    .note {
-      font-size: 12px;
-      margin-top: 10px;
-      color: #94a3b8;
-    }
-  </style>
+.hidden { display: none; }
+
+.note {
+  font-size: 12px;
+  margin-top: 10px;
+  color: #94a3b8;
+}
+
+#status {
+  margin-top: 15px;
+  font-size: 13px;
+}
+</style>
 </head>
+
 <body>
 
-  <!-- LOGIN SCREEN -->
-  <div id="loginBox" class="box">
-    <h2>🔒 Laxmi TVS Access</h2>
-    <p>Authorized use only</p>
+<!-- LOGIN -->
+<div id="loginBox" class="box">
+  <h2>🔒 Laxmi TVS Access</h2>
+  <p>Authorized use only</p>
 
-    <input type="password" id="password" placeholder="Enter password" />
-    <button onclick="checkPassword()">Access</button>
+  <input type="password" id="password" placeholder="Enter password">
+  <button onclick="checkPassword()">Access</button>
 
-    <div class="note">
-      This tool is restricted for <b>Laxmi TVS internal use only</b>.
-    </div>
+  <div class="note">
+    This tool is restricted for <b>Laxmi TVS internal use only</b>.
   </div>
+</div>
 
-  <!-- MAIN APP -->
-  <div id="appBox" class="box hidden">
-    <h2>📄 PDF Compressor</h2>
-    <p style="font-size:12px;">Laxmi TVS Internal Tool</p>
+<!-- APP -->
+<div id="appBox" class="box hidden">
+  <h2>📄 PDF Compressor</h2>
+  <p style="font-size:12px;">Laxmi TVS Internal Tool</p>
 
-    <input type="file" id="fileInput" accept="application/pdf" />
-    <button onclick="compressPDF()">Compress</button>
+  <input type="file" id="fileInput" accept="application/pdf">
+  <button onclick="compressPDF()">Compress to &lt; 250KB</button>
 
-    <div class="note">
-      Target: File size below 250 KB
-    </div>
+  <div id="status"></div>
+
+  <div class="note">
+    Best for scanned PDFs. Text PDFs may lose formatting.
   </div>
+</div>
 
-  <script>
-    const PASSWORD = "laxmitvs@2026"; // 👉 CHANGE THIS
+<script>
+const PASSWORD = "laxmitvs@2026"; // change if needed
 
-    function checkPassword() {
-      const input = document.getElementById("password").value;
+function checkPassword() {
+  const input = document.getElementById("password").value;
+  if (input === PASSWORD) {
+    document.getElementById("loginBox").classList.add("hidden");
+    document.getElementById("appBox").classList.remove("hidden");
+  } else {
+    alert("Incorrect password");
+  }
+}
 
-      if (input === PASSWORD) {
-        document.getElementById("loginBox").classList.add("hidden");
-        document.getElementById("appBox").classList.remove("hidden");
-      } else {
-        alert("Incorrect password");
-      }
+async function compressPDF() {
+  const fileInput = document.getElementById("fileInput");
+  const status = document.getElementById("status");
+
+  if (!fileInput.files.length) {
+    alert("Please upload a PDF");
+    return;
+  }
+
+  status.innerHTML = "Processing... ⏳";
+
+  const file = fileInput.files[0];
+  const arrayBuffer = await file.arrayBuffer();
+
+  const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+
+  const { jsPDF } = window.jspdf;
+
+  let qualityLevels = [0.6, 0.4, 0.25, 0.15];
+  let finalBlob = null;
+
+  for (let quality of qualityLevels) {
+
+    const doc = new jsPDF();
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const viewport = page.getViewport({ scale: 1 });
+
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+
+      await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+      const imgData = canvas.toDataURL("image/jpeg", quality);
+
+      const imgWidth = 210;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      if (i > 1) doc.addPage();
+      doc.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight);
     }
 
-    function compressPDF() {
-      alert("Use your existing compression script here");
+    const blob = doc.output("blob");
+
+    if (blob.size <= 250 * 1024) {
+      finalBlob = blob;
+      break;
     }
-  </script>
+
+    finalBlob = blob;
+  }
+
+  const url = URL.createObjectURL(finalBlob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "compressed.pdf";
+  a.click();
+
+  const sizeKB = (finalBlob.size / 1024).toFixed(2);
+
+  if (finalBlob.size <= 250 * 1024) {
+    status.innerHTML = `✅ Done! File size: ${sizeKB} KB`;
+  } else {
+    status.innerHTML = `⚠️ Could not reach 250KB. Final size: ${sizeKB} KB`;
+  }
+}
+</script>
 
 </body>
 </html>
